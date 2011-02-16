@@ -1,0 +1,5 @@
+
+uses cuda_base version of parboil benchmark:
+    doesn't use texture memory
+    but OpenCL version uses some native functions
+

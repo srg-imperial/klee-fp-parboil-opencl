@@ -1,0 +1,23 @@
+
+I. Compilation
+
+Call "make" in the appropriate source directory to a version of the benchmark.
+
+Add "-D PROFILING" to enable profiling of kernel executions etc.
+You may have to call "make --always-make" to ensure that all files are being re-compiled.
+
+
+II. Running the Program
+
+After compilation, the program binary can be found in the "bin" directory.
+Depending on the version (CUDA or OpenCL), the binary is called "rpes-cuda"
+or "rpes-opencl", respectively.
+
+IIa. Command Line Parameters
+
+There is only one input set: default. It can be found in the inputs folder.
+Pass file.inp and then basis.inp as first and second command line parameters.
+
+Further command line parameters:
+    -local  local work size (default: 64)
+

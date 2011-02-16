@@ -1,0 +1,13 @@
+
+I. SETUP
+
+Edit file common/common.mk and adjust the OpenCL platform (eg "NVIDIA CUDA") and the
+OpenCL device ID.
+
+
+II. BENCHMARKS
+
+Open the benchmark's folder in the benchmarks directory. Each folder contains a README
+describing how to compile and run the benchmark.
+
+

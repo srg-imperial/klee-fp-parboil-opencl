@@ -1,0 +1,27 @@
+
+I. Compilation
+
+Call "make" in the appropriate source directory to a version of the benchmark.
+
+Add "-D PROFILING" to enable profiling of kernel executions etc.
+You may have to call "make --always-make" to ensure that all files are being re-compiled.
+
+
+II. Running the Program
+
+After compilation, the program binary can be found in the "bin" directory.
+Depending on the version (CUDA or OpenCL), the binary is called "mri-q-cuda"
+or "mri-q-opencl", respectively.
+
+IIa. Command Line Parameters
+
+There are two possible input sets: small and large.
+They can be found in the inputs folder. Pass the appropriate file as the first
+command line parameter.
+
+Further command line parameters:
+    -phimag-local  threads per block for PhiMag kernel (default: 512)
+    -q-local      threads per block for Q kernel     (default: 256)
+    -numK          number of samples
+    -numX          pixels in output
+

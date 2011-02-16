@@ -1,0 +1,27 @@
+
+I. Compilation
+
+Call "make" in the appropriate source directory to a version of the benchmark.
+
+Add "-D PROFILING" to enable profiling of kernel executions etc.
+You may have to call "make --always-make" to ensure that all files are being re-compiled.
+
+
+II. Running the Program
+
+After compilation, the program binary can be found in the "bin" directory.
+Depending on the version (CUDA or OpenCL), the binary is called "cp-cuda"
+or "cp-opencl", respectively.
+
+IIa. Command Line Parameters
+
+There are three command line parameters controlling the overall program size:
+    -volx   volume size in x-dimension (default: 512)
+    -voly   volume size in y-dimension (default: 512)
+    -atoms  number of atoms            (default: 40000)
+
+To change the size of local workgroups, use the following parameters:
+    -localx number of workitems in workgroup in x-dimension (default: 16)
+    -localy number of workitems in workgroup in y-dimension (default:  8)
+
+
