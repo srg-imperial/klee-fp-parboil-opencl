@@ -1,0 +1,5 @@
+#!/bin/sh
+
+. $(dirname $0)/Makefile.config
+
+make CFLAGS='-emit-llvm -I'$KLEE_PATH'/include' CXX=$LLVM_BUILD_PATH/bin/clang CXXLD=$LLVM_BUILD_PATH/bin/llvm-ld OPENCL_PLATFORM='KLEE Symbolic Virtual Machine'
