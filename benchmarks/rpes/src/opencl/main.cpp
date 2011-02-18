@@ -461,9 +461,9 @@ void PopulateHostData(int totNumAtoms, int totNumShells, int numBasisAtoms)
   PopulateWeights();
   for(int atom = 0; atom < totNumAtoms; atom ++)
     {
-      Coors[atom][0] = ComputeAtom[atom].X;
-      Coors[atom][1] = ComputeAtom[atom].Y;
-      Coors[atom][2] = ComputeAtom[atom].Z;
+      Coors[atom].s[0] = ComputeAtom[atom].X;
+      Coors[atom].s[1] = ComputeAtom[atom].Y;
+      Coors[atom].s[2] = ComputeAtom[atom].Z;
     }
 
   int currentPos = 0;
@@ -475,9 +475,9 @@ void PopulateHostData(int totNumAtoms, int totNumShells, int numBasisAtoms)
                 BasisAtom[batom].AtomShell[shell].numPrimitives; 
               prim ++)
             {
-              Sprms[currentPos][0] = 
+              Sprms[currentPos].s[0] = 
                 BasisAtom[batom].AtomShell[shell].Alpha[prim];
-              Sprms[currentPos][1] = 
+              Sprms[currentPos].s[1] = 
                 BasisAtom[batom].AtomShell[shell].Coeff[prim];
               currentPos ++;
             }
@@ -505,8 +505,8 @@ int NumOfIntegrals(int totNumShells, int blockSize)
             totNumBlocks += blocks;
             if(blocks > MaxBlocks)
               MaxBlocks = blocks;
-            FinalReduce[redElement][0] = firstRedElement;
-            FinalReduce[redElement][1] = blocks;
+            FinalReduce[redElement].s[0] = firstRedElement;
+            FinalReduce[redElement].s[1] = blocks;
             firstRedElement += blocks;
             redElement ++;
           }
@@ -545,25 +545,25 @@ void DistributeBlockWork(int totNumShells, int blockSize)
                       int offset2 = ComputeShell[shell2].inList[0];
                       int offset1 = ComputeShell[shell1].inList[0];
                       
-                      Block_Work[numElements][1] = 
+                      Block_Work[numElements].s[1] = 
                         (ComputeShell[shell1].myAtom << 24) | 
                         (ComputeShell[shell2].myAtom << 16) | 
                         (ComputeShell[shell3].myAtom << 8 ) | 
                         (ComputeShell[shell4].myAtom      ) ;
                       
-                      Block_Work[numElements][2] = 
+                      Block_Work[numElements].s[2] = 
                         (offset1 << 24) | 
                         (offset2 << 16) | 
                         (offset3 << 8 ) | 
                         (offset4) ;
                       
-                      Block_Work[numElements][0] = 
+                      Block_Work[numElements].s[0] = 
                         (a1         << 12) |
                         (a2         <<  8) |
                         (a3         <<  4) |
                         (a4              ) ;
                       
-                      Block_Work[numElements][3] = StartBlock;
+                      Block_Work[numElements].s[3] = StartBlock;
                       
                       numElements ++;
                     }
