@@ -78,6 +78,21 @@ int main(int argc, char* argv[])
   char *inputfile = argv[1];
   char *inputfile2 = argv[2];
 
+  // initialize OpenCL context and create command queue
+  cl_int ciErr;
+  OclWrapper *ocl = new OclWrapper;
+  if (!ocl->init (OPENCL_PLATFORM, OPENCL_DEVICE_ID))
+    return 1;
+
+  // load and build kernel
+  cl_program program;
+  if (!ocl->buildProgram ("crys_kernel.cl", &program))
+    return 1;
+  cl_kernel ckComputeX = clCreateKernel(program, "ComputeX", &ciErr);
+  if (!OclWrapper::checkErr(ciErr, "create computeX kernel")) return 1;
+  cl_kernel ckReduction = clCreateKernel(program, "DoReduction", &ciErr);
+  if (!OclWrapper::checkErr(ciErr, "create reduction kernel")) return 1;
+
   int numBasisAtoms;
   BasisAtom = ReadBasisAtoms(numBasisAtoms, inputfile2);
   
@@ -117,21 +132,6 @@ int main(int argc, char* argv[])
   int final_mem = totReductionElements * sizeof(cl_uint2);
 
   ReductionSum = (float*)malloc(reduction_mem);
-
-  // initialize OpenCL context and create command queue
-  cl_int ciErr;
-  OclWrapper *ocl = new OclWrapper;
-  if (!ocl->init (OPENCL_PLATFORM, OPENCL_DEVICE_ID))
-    return 1;
-
-  // load and build kernel
-  cl_program program;
-  if (!ocl->buildProgram ("crys_kernel.cl", &program))
-    return 1;
-  cl_kernel ckComputeX = clCreateKernel(program, "ComputeX", &ciErr);
-  if (!OclWrapper::checkErr(ciErr, "create computeX kernel")) return 1;
-  cl_kernel ckReduction = clCreateKernel(program, "DoReduction", &ciErr);
-  if (!OclWrapper::checkErr(ciErr, "create reduction kernel")) return 1;
 
   // prepare device data
   AllocateDataOnDevice(ocl->getContext(), ocl->getCmdQueue(),
