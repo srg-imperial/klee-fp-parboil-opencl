@@ -5,8 +5,6 @@ BENCHMARK=rpes
 VERSION=opencl
 COMMON_DIR=../../../../common
 CLFAGS=
-CXX=g++
-CXXLD=g++
 
 all: obj/main.o obj/common.o obj/ocl-wrapper.o
 	$(CXXLD) -lOpenCL obj/common.o obj/ocl-wrapper.o obj/main.o -o ../../bin/$(BENCHMARK)-$(VERSION)
