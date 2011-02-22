@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <malloc.h>
+#include <string.h>
 #include <algorithm>
 
 #include <common.h>
