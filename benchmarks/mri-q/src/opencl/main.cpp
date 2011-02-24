@@ -75,13 +75,9 @@ cleanupMemoryGPU(cl_command_queue cq, int num, int size, cl_mem & dev_m, float *
   OclWrapper::checkErr(ciErr, "release buffer");
 }
 
-void computePhiMag_GPU(cl_command_queue cq, cl_kernel ckPhiMag, int argc, char** argv, int numK, cl_mem * phiR_d, cl_mem * phiI_d, cl_mem * phiMag_d)
+void computePhiMag_GPU(cl_command_queue cq, cl_kernel ckPhiMag, size_t localWorkSize, int numK, cl_mem * phiR_d, cl_mem * phiI_d, cl_mem * phiMag_d)
 {
-  size_t localWorkSize;
   size_t globalWorkSize;
-
-  localWorkSize = KERNEL_PHI_MAG_THREADS_PER_BLOCK;
-  getCmdLineParamInt("-phimag-local", argc, argv, (int*)&localWorkSize);
 
   int phiMagBlocks = numK / localWorkSize;
   if (numK % localWorkSize)
@@ -100,18 +96,14 @@ void computePhiMag_GPU(cl_command_queue cq, cl_kernel ckPhiMag, int argc, char**
   OclWrapper::checkErr(ciErr, "computePhiMag: start kernel");
 }
 
-void computeQ_GPU(cl_command_queue cq, cl_kernel ckQ, int argc, char** argv,
+void computeQ_GPU(cl_command_queue cq, cl_kernel ckQ, size_t localWorkSize,
                   int numK, int numX,
                   cl_mem * x_d, cl_mem * y_d, cl_mem * z_d,
                   kValues* kVals,
                   cl_mem * Qr_d, cl_mem * Qi_d,
                   cl_mem * c_d)
 {
-  size_t localWorkSize;
   size_t globalWorkSize;
-
-  localWorkSize = KERNEL_Q_THREADS_PER_BLOCK;
-  getCmdLineParamInt("-q-local", argc, argv, (int*)&localWorkSize);
 
   int QGrids = numK / KERNEL_Q_K_ELEMS_PER_GRID;
   if (numK % KERNEL_Q_K_ELEMS_PER_GRID)
@@ -160,41 +152,13 @@ void createDataStructsCPU(int numK, int numX, float** phiMag,
   *Qi = (float*) memalign(16, numX * sizeof (float));
 }
 
-
-int
-main (int argc, char *argv[]) {
-  int numX, numK;		/* Number of X and K values */
-  int original_numK, original_numX;		/* Number of K values in input file */
-  float *kx, *ky, *kz;		/* K trajectory (3D vectors) */
-  float *x, *y, *z;		/* X coordinates (3D vectors) */
-  float *phiR, *phiI;		/* Phi values (complex) */
+int computeMRIQ_GPU(size_t phiWorkSize, size_t qWorkSize, int numK, int numX, 
+                    float *kx, float *ky, float *kz,
+                    float *x, float *y, float *z,
+                    float *phiR, float *phiI,
+                    float **Qr, float **Qi) {
   float *phiMag;		/* Magnitude of Phi */
-  float *Qr, *Qi;		/* Q signal (complex) */
-
   struct kValues* kVals;
-
-
-  /* Read in data */
-  inputData(argv[1],
-	    &original_numK, &original_numX,
-	    &kx, &ky, &kz,
-	    &x, &y, &z,
-	    &phiR, &phiI);
-
-  /* Reduce the number of k-space samples if a number is given
-   * on the command line */
-  if (getCmdLineParamInt("-numK", argc, argv, &numK))
-    numK = MIN(numK, original_numK);
-  else
-    numK = original_numK;
-
-  if (getCmdLineParamInt("-numX", argc, argv, &numX))
-    numX = MIN(numX, original_numX);
-  else
-    numX = original_numX;
-
-  printf("%d pixels in output; %d samples in trajectory; using %d samples\n",
-         numX, original_numK, numK);
 
   // initialize OpenCL context and create command queue
   cl_int ciErr;
@@ -213,7 +177,7 @@ main (int argc, char *argv[]) {
 
 
   /* Create CPU data structures */
-  createDataStructsCPU(numK, numX, &phiMag, &Qr, &Qi);
+  createDataStructsCPU(numK, numX, &phiMag, Qr, Qi);
 
   /* GPU section 1 (precompute PhiMag) */
   {
@@ -228,7 +192,7 @@ main (int argc, char *argv[]) {
 
     //if (params->synchronizeGpu) cudaThreadSynchronize();
 
-    computePhiMag_GPU(ocl->getCmdQueue(), ckComputePhiMag, argc, argv, numK, &phiR_d, &phiI_d, &phiMag_d);
+    computePhiMag_GPU(ocl->getCmdQueue(), ckComputePhiMag, phiWorkSize, numK, &phiR_d, &phiI_d, &phiMag_d);
 
     //if (params->synchronizeGpu) cudaThreadSynchronize();
 
@@ -267,26 +231,77 @@ main (int argc, char *argv[]) {
     OclWrapper::checkErr(ciErr, "create buffer: Qr_d");
     Qi_d = clCreateBuffer(ocl->getContext(), CL_MEM_READ_WRITE, numX*sizeof(float), NULL, &ciErr);
     OclWrapper::checkErr(ciErr, "create buffer: Qi_d");
-    memset(Qr, 0, numX*sizeof(float));
-    memset(Qi, 0, numX*sizeof(float));
-    ciErr  = clEnqueueWriteBuffer(ocl->getCmdQueue(), Qr_d, CL_TRUE, 0, numX * sizeof(float), Qr, 0, NULL, NULL);
-    ciErr |= clEnqueueWriteBuffer(ocl->getCmdQueue(), Qi_d, CL_TRUE, 0, numX * sizeof(float), Qi, 0, NULL, NULL);
+    memset(*Qr, 0, numX*sizeof(float));
+    memset(*Qi, 0, numX*sizeof(float));
+    ciErr  = clEnqueueWriteBuffer(ocl->getCmdQueue(), Qr_d, CL_TRUE, 0, numX * sizeof(float), *Qr, 0, NULL, NULL);
+    ciErr |= clEnqueueWriteBuffer(ocl->getCmdQueue(), Qi_d, CL_TRUE, 0, numX * sizeof(float), *Qi, 0, NULL, NULL);
     OclWrapper::checkErr(ciErr, "write buffer Qr, Qi");
 
 
     //if (params->synchronizeGpu) cudaThreadSynchronize();
 
-    computeQ_GPU(ocl->getCmdQueue(), ckComputeQ, argc, argv, numK, numX, &x_d, &y_d, &z_d, kVals, &Qr_d, &Qi_d, &c_d);
+    computeQ_GPU(ocl->getCmdQueue(), ckComputeQ, qWorkSize, numK, numX, &x_d, &y_d, &z_d, kVals, &Qr_d, &Qi_d, &c_d);
 
     //if (params->synchronizeGpu) cudaThreadSynchronize();
 
     clReleaseMemObject(x_d);
     clReleaseMemObject(y_d);
     clReleaseMemObject(z_d);
-    cleanupMemoryGPU(ocl->getCmdQueue(), numX, sizeof(float), Qr_d, Qr);
-    cleanupMemoryGPU(ocl->getCmdQueue(), numX, sizeof(float), Qi_d, Qi);
+    cleanupMemoryGPU(ocl->getCmdQueue(), numX, sizeof(float), Qr_d, *Qr);
+    cleanupMemoryGPU(ocl->getCmdQueue(), numX, sizeof(float), Qi_d, *Qi);
   }
 
+  free (kVals);
+
+  clReleaseKernel(ckComputeQ);
+  clReleaseKernel(ckComputePhiMag);
+  clReleaseProgram(program);
+  delete ocl;
+
+  return 0;
+}
+
+int
+main (int argc, char *argv[]) {
+  int numX, numK;		/* Number of X and K values */
+  int original_numK, original_numX;		/* Number of K values in input file */
+  float *kx, *ky, *kz;		/* K trajectory (3D vectors) */
+  float *x, *y, *z;		/* X coordinates (3D vectors) */
+  float *phiR, *phiI;		/* Phi values (complex) */
+  float *Qr, *Qi;		/* Q signal (complex) */
+  size_t phiWorkSize, qWorkSize;
+
+
+  /* Read in data */
+  inputData(argv[1],
+	    &original_numK, &original_numX,
+	    &kx, &ky, &kz,
+	    &x, &y, &z,
+	    &phiR, &phiI);
+
+  /* Reduce the number of k-space samples if a number is given
+   * on the command line */
+  if (getCmdLineParamInt("-numK", argc, argv, &numK))
+    numK = MIN(numK, original_numK);
+  else
+    numK = original_numK;
+
+  if (getCmdLineParamInt("-numX", argc, argv, &numX))
+    numX = MIN(numX, original_numX);
+  else
+    numX = original_numX;
+
+  phiWorkSize = KERNEL_PHI_MAG_THREADS_PER_BLOCK;
+  getCmdLineParamInt("-phimag-local", argc, argv, (int*)&phiWorkSize);
+
+  qWorkSize = KERNEL_Q_THREADS_PER_BLOCK;
+  getCmdLineParamInt("-q-local", argc, argv, (int*)&qWorkSize);
+
+  printf("%d pixels in output; %d samples in trajectory; using %d samples\n",
+         numX, original_numK, numK);
+
+  if (computeMRIQ_GPU(phiWorkSize, qWorkSize, numK, numX, kx, ky, kz, x, y, z, phiR, phiI, &Qr, &Qi))
+    return 1;
 
   free (kx);
   free (ky);
@@ -296,15 +311,8 @@ main (int argc, char *argv[]) {
   free (z);
   free (phiR);
   free (phiI);
-  free (kVals);
   free (Qr);
   free (Qi);
-
-  clReleaseKernel(ckComputeQ);
-  clReleaseKernel(ckComputePhiMag);
-  clReleaseProgram(program);
-  delete ocl;
-
 
 #ifdef PROFILING
   printf ("\n-------- PROFILING RESULTS --------\n");
