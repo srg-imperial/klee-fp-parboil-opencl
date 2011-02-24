@@ -51,8 +51,6 @@ struct kValues {
   float PhiMag;
 };
 
-cl_event evPhiMag, *evQ;
-int numQ;
 
 
 static void
@@ -78,6 +76,7 @@ cleanupMemoryGPU(cl_command_queue cq, int num, int size, cl_mem & dev_m, float *
 void computePhiMag_GPU(cl_command_queue cq, cl_kernel ckPhiMag, size_t localWorkSize, int numK, cl_mem * phiR_d, cl_mem * phiI_d, cl_mem * phiMag_d)
 {
   size_t globalWorkSize;
+  cl_event evPhiMag;
 
   int phiMagBlocks = numK / localWorkSize;
   if (numK % localWorkSize)
@@ -104,6 +103,8 @@ void computeQ_GPU(cl_command_queue cq, cl_kernel ckQ, size_t localWorkSize,
                   cl_mem * c_d)
 {
   size_t globalWorkSize;
+  int numQ;
+  cl_event *evQ;
 
   int QGrids = numK / KERNEL_Q_K_ELEMS_PER_GRID;
   if (numK % KERNEL_Q_K_ELEMS_PER_GRID)
@@ -142,6 +143,8 @@ void computeQ_GPU(cl_command_queue cq, cl_kernel ckQ, size_t localWorkSize,
     ciErr = clEnqueueNDRangeKernel(cq, ckQ, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &evQ[QGrid]);
     OclWrapper::checkErr(ciErr, "computeQ: start kernel");
   }
+
+  free(evQ);
 }
 
 void createDataStructsCPU(int numK, int numX, float** phiMag,
@@ -313,34 +316,6 @@ main (int argc, char *argv[]) {
   free (phiI);
   free (Qr);
   free (Qi);
-
-#ifdef PROFILING
-  printf ("\n-------- PROFILING RESULTS --------\n");
-  // output kernel runtimes
-  double avg, diff;
-  cl_ulong culStart, culEnd;
-
-  clGetEventProfilingInfo(evPhiMag, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &culStart, NULL);
-  clGetEventProfilingInfo(evPhiMag, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &culEnd, NULL);
-  diff = (double)(culEnd-culStart)/1000000;
-  printf ("kernel computePhiMag: %fms\n", diff);
-
-  for (int i=0; i<numQ; i++)
-  {
-    clGetEventProfilingInfo(evQ[i], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &culStart, NULL);
-    clGetEventProfilingInfo(evQ[i], CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &culEnd, NULL);
-
-    diff = (double)(culEnd-culStart)/1000000;
-    avg += diff;
-
-    printf ("kernel computeQ (%d): %fms\n", i, diff);
-  }
-  printf ("kernel computeQ avg: %fms\n", avg/numQ);
-  printf ("\n");
-#endif
-
-  free(evQ);
-
 
   return 0;
 }
