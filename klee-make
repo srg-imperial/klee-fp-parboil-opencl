@@ -2,4 +2,4 @@
 
 . $(dirname $0)/Makefile.config
 
-make CFLAGS='-emit-llvm -I'$KLEE_PATH'/include' CXX=$LLVM_BUILD_PATH/bin/clang CXXLD=$LLVM_BUILD_PATH/bin/llvm-ld OPENCL_PLATFORM='KLEE Symbolic Virtual Machine'
+make CFLAGS='-I../../../../common -std=gnu99 -emit-llvm -I'$KLEE_PATH'/include' CXXFLAGS='-I../../../../common -std=gnu++98 -emit-llvm -I'$KLEE_PATH'/include' CC=$LLVM_BUILD_PATH/bin/clang CXX=$LLVM_BUILD_PATH/bin/clang++ CXXLD=$LLVM_BUILD_PATH/bin/llvm-ld OPENCL_PLATFORM='KLEE Symbolic Virtual Machine'
