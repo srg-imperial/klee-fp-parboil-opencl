@@ -34,7 +34,7 @@
 #include <parboil.h>
 
 #include "file.h"
-#include "computeQ.cc"
+#include "computeQ.h"
 
 int
 main (int argc, char *argv[]) {

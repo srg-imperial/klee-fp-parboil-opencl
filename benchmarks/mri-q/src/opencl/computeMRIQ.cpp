@@ -5,7 +5,6 @@
 #include <malloc.h>
 #include <string.h>
 
-#include <common.h>
 #include <ocl-wrapper.h>
 
 #include "file.h"
@@ -120,7 +119,7 @@ void computeQ_GPU(cl_command_queue cq, cl_kernel ckQ, size_t localWorkSize,
   free(evQ);
 }
 
-void createDataStructsCPU(int numK, int numX, float** phiMag,
+static void createDataStructsCPU(int numK, int numX, float** phiMag,
      float** Qr, float** Qi)
 {
   *phiMag = (float* ) memalign(16, numK * sizeof(float));
