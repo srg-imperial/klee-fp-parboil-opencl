@@ -8,6 +8,7 @@
 #include <ocl-wrapper.h>
 
 #include "file.h"
+#include "computeMRIQ.h"
 
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define K_ELEMS_PER_GRID 2048
