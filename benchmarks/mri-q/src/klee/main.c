@@ -55,8 +55,8 @@ int main(int argc, char **argv) {
 
   int same = 1;
   for (int x = 0; x < numX; ++x) {
-    same |= float_bitwise_eq(cpuQr[x], gpuQr[x]);
-    same |= float_bitwise_eq(cpuQi[x], gpuQi[x]);
+    same &= float_bitwise_eq(cpuQr[x], gpuQr[x]);
+    same &= float_bitwise_eq(cpuQi[x], gpuQi[x]);
   }
   klee_print_expr("same", same);
 
