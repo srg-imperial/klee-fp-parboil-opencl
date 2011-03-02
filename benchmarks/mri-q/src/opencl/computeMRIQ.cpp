@@ -99,6 +99,7 @@ void computeQ_GPU(cl_command_queue cq, cl_kernel ckQ, size_t localWorkSize,
   ciErr |= clSetKernelArg (ckQ, 5, sizeof(cl_mem), Qr_d);
   ciErr |= clSetKernelArg (ckQ, 6, sizeof(cl_mem), Qi_d);
   ciErr |= clSetKernelArg (ckQ, 7, sizeof(cl_mem), c_d);
+  ciErr |= clSetKernelArg (ckQ, 8, sizeof(int), (void*)&numX);
   OclWrapper::checkErr(ciErr, "computeQ: set kernel args");
 
   // KERNEL_Q_K_ELEMS_PER_GRID);
