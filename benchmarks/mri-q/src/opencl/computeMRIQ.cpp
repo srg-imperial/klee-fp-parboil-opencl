@@ -220,11 +220,11 @@ int computeMRIQ_GPU(size_t phiWorkSize, size_t qWorkSize, int numK, int numX,
 
     //if (params->synchronizeGpu) cudaThreadSynchronize();
 
+    cleanupMemoryGPU(ocl->getCmdQueue(), numX, sizeof(float), Qr_d, *Qr);
+    cleanupMemoryGPU(ocl->getCmdQueue(), numX, sizeof(float), Qi_d, *Qi);
     clReleaseMemObject(x_d);
     clReleaseMemObject(y_d);
     clReleaseMemObject(z_d);
-    cleanupMemoryGPU(ocl->getCmdQueue(), numX, sizeof(float), Qr_d, *Qr);
-    cleanupMemoryGPU(ocl->getCmdQueue(), numX, sizeof(float), Qi_d, *Qi);
   }
 
   free (kVals);
