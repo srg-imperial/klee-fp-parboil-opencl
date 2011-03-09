@@ -169,8 +169,10 @@ int computeMRIFHD_GPU(size_t rhophiWorkSize, size_t fhWorkSize, int numK, int nu
   createDataStructs(numK, numX, realRhoPhi, imagRhoPhi, *outR, *outI);
   kVals = (kValues*)calloc(numK, sizeof (kValues));
 
+#ifndef DISABLE_TIMERS
   inf_timer ifGPU;
   startTimer(&ifGPU);
+#endif
 
   /* GPU section 1 (precompute Rho, Phi)*/
   {
@@ -201,8 +203,10 @@ int computeMRIFHD_GPU(size_t rhophiWorkSize, size_t fhWorkSize, int numK, int nu
   }
 
   clFinish(ocl->getCmdQueue());
+#ifndef DISABLE_TIMERS
   stopTimer(&ifGPU);
   printf ("loop 1: %fms\n", elapsedTime(ifGPU));
+#endif
 
   /* Fill in kVals values */
   for (int k = 0; k < numK; k++) {
@@ -213,7 +217,9 @@ int computeMRIFHD_GPU(size_t rhophiWorkSize, size_t fhWorkSize, int numK, int nu
     kVals[k].RhoPhiI = imagRhoPhi[k];
   }
 
+#ifndef DISABLE_TIMERS
   startTimer(&ifGPU);
+#endif
 
   /* GPU section 2 (compute FH)*/
   {
@@ -255,8 +261,10 @@ int computeMRIFHD_GPU(size_t rhophiWorkSize, size_t fhWorkSize, int numK, int nu
   }
 
   clFinish(ocl->getCmdQueue());
+#ifndef DISABLE_TIMERS
   stopTimer(&ifGPU);
   printf ("loop 2: %fms\n", elapsedTime(ifGPU));
+#endif
 
   free (realRhoPhi);
   free (imagRhoPhi);
