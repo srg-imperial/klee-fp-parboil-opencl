@@ -8,6 +8,7 @@
 
 #include <malloc.h>
 #include <math.h>
+#include <string.h>
 #include "computeFH.h"
 
 #define PI   3.1415926535897932384626433832795029f
@@ -37,6 +38,9 @@ ComputeFH(int numK, int numX,
   float expArg;
   float cosArg;
   float sinArg;
+
+  memset((void *) outR, 0, numX * sizeof (float));
+  memset((void *) outI, 0, numX * sizeof (float));
 
   for (int indexK = 0; indexK < numK; indexK++) {
     for (int indexX = 0; indexX < numX; indexX++) {
