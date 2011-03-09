@@ -115,6 +115,7 @@ void computeFH_GPU(cl_command_queue cq, cl_kernel ckFH, size_t localWorkSize,
   clSetKernelArg(ckFH, 5, sizeof(cl_mem), outR_d);
   clSetKernelArg(ckFH, 6, sizeof(cl_mem), outI_d);
   clSetKernelArg(ckFH, 7, sizeof(cl_mem), c_d);
+  clSetKernelArg(ckFH, 8, sizeof(int), (void*)&numX);
 
   numFH = FHGrids;
   evFH = (cl_event*) malloc (sizeof(cl_event) * numFH);
