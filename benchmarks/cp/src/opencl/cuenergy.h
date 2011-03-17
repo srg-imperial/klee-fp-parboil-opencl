@@ -30,6 +30,5 @@
 #define VOLSIZEY 512
 #define ATOMCOUNT 40000
 
-int copyatomstoconstbuf(float *atoms,
-			int count,
-			float zplane);
+int gpuenergy(size_t volsize[3], size_t globalWorkSize[3], size_t localWorkSize[3],
+              int atomcount, float gridspacing, const float *atoms, float *&energy);
