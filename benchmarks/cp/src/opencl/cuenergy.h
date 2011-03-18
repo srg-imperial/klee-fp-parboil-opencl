@@ -6,6 +6,8 @@
  *cr
  ***************************************************************************/
 
+#include <stddef.h>
+
 /* Size of a thread block */
 #define BLOCKSIZEX 16
 #define BLOCKSIZEY 8

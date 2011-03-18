@@ -21,9 +21,17 @@
 #define ATOMCOUNT 40000
 
 /* The main compute kernel. */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void cpuenergy(voldim3i grid,
 	       int numatoms,
 	       float gridspacing,
 	       int k,
 	       const float *atoms,
 	       float *energygrid);
+
+#ifdef __cplusplus
+}
+#endif
