@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   cpuenergy(grid, numatoms, gridspacing, 0, atoms, cenergy);
   gpuenergy(volsize, globalWorkSize, localWorkSize, numatoms, gridspacing, atoms, genergy);
   
-  int same;
+  int same = 1;
   for (int x = 0; x < grid.x * grid.y * grid.z; ++x) {
     same &= float_bitwise_eq(cenergy[x], genergy[x]);
   }
