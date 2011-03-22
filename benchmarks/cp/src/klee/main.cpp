@@ -9,7 +9,7 @@
 
 int main(int argc, char **argv) {
   unsigned numatoms = 2;
-  voldim3i grid = { 32, 32, 1 };
+  voldim3i grid = { 32, 4, 1 };
   size_t volsize[3] = { grid.x, grid.y, grid.z };
   size_t globalWorkSize[3] = { grid.x/UNROLLX, grid.y, grid.z };
   size_t localWorkSize[3] = { globalWorkSize[0]/2, globalWorkSize[1]/2, 1 };
