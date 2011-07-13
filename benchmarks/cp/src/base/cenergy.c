@@ -44,7 +44,7 @@ void cpuenergy(voldim3i grid,
         float dx = x - atoms[n  ];
         float dy = y - atoms[n+1];
         float dz = z - atoms[n+2];
-        energy += atoms[n+3] / sqrtf(dx*dx + dy*dy + dz*dz);
+        energy += atoms[n+3] / sqrtf(dx*dx + (dy*dy + dz*dz));
       }
 
       energygrid[grid.x*grid.y*k + grid.x*j + i] = energy;
