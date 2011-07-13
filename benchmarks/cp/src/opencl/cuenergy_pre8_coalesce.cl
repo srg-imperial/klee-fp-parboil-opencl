@@ -21,9 +21,12 @@ __kernel void cenergy(int numatoms, float gridspacing, __global float * energygr
   unsigned int xindex  = get_group_id(0)*get_local_size(0) * UNROLLX + get_local_id(0);
   unsigned int yindex  = get_global_id(1);
   unsigned int outaddr = get_global_size(0) * UNROLLX * yindex + xindex;
+  int blockSizeX = get_local_size(0);
 
-  float coory = gridspacing * yindex;
-  float coorx = gridspacing * xindex;
+  float coory = yindex * gridspacing;
+  float8 coorx = gridspacing *
+   (float8)(xindex,              xindex+  blockSizeX, xindex+2*blockSizeX, xindex+3*blockSizeX,
+            xindex+4*blockSizeX, xindex+5*blockSizeX, xindex+6*blockSizeX, xindex+7*blockSizeX);
 
   float energyvalx1=0.0f;
   float energyvalx2=0.0f;
@@ -34,31 +37,21 @@ __kernel void cenergy(int numatoms, float gridspacing, __global float * energygr
   float energyvalx7=0.0f;
   float energyvalx8=0.0f;
 
-  int blockSizeX = get_local_size(0);
-  float gridspacing_u = gridspacing * blockSizeX;
-
   int atomid;
   for (atomid=0; atomid<numatoms; atomid++) {
     float dy = coory - atominfo[atomid].y;
     float dyz2 = (dy * dy) + atominfo[atomid].z;
 
-    float dx1 = coorx - atominfo[atomid].x;
-    float dx2 = dx1 + gridspacing_u;
-    float dx3 = dx2 + gridspacing_u;
-    float dx4 = dx3 + gridspacing_u;
-    float dx5 = dx4 + gridspacing_u;
-    float dx6 = dx5 + gridspacing_u;
-    float dx7 = dx6 + gridspacing_u;
-    float dx8 = dx7 + gridspacing_u;
+    float8 dx = coorx - atominfo[atomid].x;
 
-    energyvalx1 += atominfo[atomid].w * (1.0f / native_sqrt(dx1*dx1 + dyz2));
-    energyvalx2 += atominfo[atomid].w * (1.0f / native_sqrt(dx2*dx2 + dyz2));
-    energyvalx3 += atominfo[atomid].w * (1.0f / native_sqrt(dx3*dx3 + dyz2));
-    energyvalx4 += atominfo[atomid].w * (1.0f / native_sqrt(dx4*dx4 + dyz2));
-    energyvalx5 += atominfo[atomid].w * (1.0f / native_sqrt(dx5*dx5 + dyz2));
-    energyvalx6 += atominfo[atomid].w * (1.0f / native_sqrt(dx6*dx6 + dyz2));
-    energyvalx7 += atominfo[atomid].w * (1.0f / native_sqrt(dx7*dx7 + dyz2));
-    energyvalx8 += atominfo[atomid].w * (1.0f / native_sqrt(dx8*dx8 + dyz2));
+    energyvalx1 += atominfo[atomid].w / native_sqrt(dx[0]*dx[0] + dyz2);
+    energyvalx2 += atominfo[atomid].w / native_sqrt(dx[1]*dx[1] + dyz2);
+    energyvalx3 += atominfo[atomid].w / native_sqrt(dx[2]*dx[2] + dyz2);
+    energyvalx4 += atominfo[atomid].w / native_sqrt(dx[3]*dx[3] + dyz2);
+    energyvalx5 += atominfo[atomid].w / native_sqrt(dx[4]*dx[4] + dyz2);
+    energyvalx6 += atominfo[atomid].w / native_sqrt(dx[5]*dx[5] + dyz2);
+    energyvalx7 += atominfo[atomid].w / native_sqrt(dx[6]*dx[6] + dyz2);
+    energyvalx8 += atominfo[atomid].w / native_sqrt(dx[7]*dx[7] + dyz2);
   }
 
   energygrid[outaddr]   += energyvalx1;
