@@ -102,7 +102,6 @@ int gpuenergy(size_t volsize[3], size_t globalWorkSize[3], size_t localWorkSize[
 
 
     // set kernel arguments
-    float gridspacing = 0.1;
     ciErr = clSetKernelArg(kernel, 1, sizeof(float), (void*)&gridspacing);
     ciErr = clSetKernelArg(kernel, 2, sizeof(cl_mem), &d_output);
     ciErr = clSetKernelArg(kernel, 3, sizeof(cl_mem), &d_atoms);
